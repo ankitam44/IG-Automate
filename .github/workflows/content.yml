@@ -1,0 +1,34 @@
+name: Content Agent (generate posts + images)
+
+on:
+  schedule:
+    - cron: "0 13 * * 2,5"  # Tue & Fri 13:00 UTC -- keeps ~1 week of queue ahead
+  workflow_dispatch:
+    inputs:
+      count:
+        description: "How many posts to generate"
+        required: false
+        default: "2"
+
+jobs:
+  content:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - run: python agents/content_agent.py
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          POSTS_TO_GENERATE: ${{ github.event.inputs.count || '2' }}
+      - name: Commit new queued posts + images
+        run: |
+          git config user.name "ig-automate-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/queue.json data/generated/images
+          git diff --cached --quiet || git commit -m "chore: generate new post batch [automated]"
+          git push

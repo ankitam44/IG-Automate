@@ -1,0 +1,29 @@
+name: Publisher Agent (post to Instagram)
+
+on:
+  schedule:
+    - cron: "0 * * * *"  # hourly check for anything due; posting itself only happens on your configured cadence
+  workflow_dispatch: {}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - run: python agents/publisher_agent.py
+        env:
+          IG_BUSINESS_ACCOUNT_ID: ${{ secrets.IG_BUSINESS_ACCOUNT_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+      - name: Commit queue/log updates
+        run: |
+          git config user.name "ig-automate-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/queue.json data/published_log.json
+          git diff --cached --quiet || git commit -m "chore: publish due posts [automated]"
+          git push

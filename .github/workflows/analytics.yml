@@ -1,0 +1,28 @@
+name: Analytics Agent (collect engagement)
+
+on:
+  schedule:
+    - cron: "0 15 * * *"  # daily 15:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  analytics:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - run: python agents/analytics_agent.py
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+      - name: Commit insights
+        run: |
+          git config user.name "ig-automate-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/published_log.json
+          git diff --cached --quiet || git commit -m "chore: record post insights [automated]"
+          git push

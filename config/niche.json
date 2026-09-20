@@ -1,0 +1,29 @@
+{
+  "niche": "fun easy AI tech",
+  "description": "Approachable, everyday AI tools and tricks presented in a fun, low-jargon way for a broad, non-technical audience.",
+  "tone": "friendly, energetic, encouraging, zero-jargon, a little playful",
+  "audience": "people curious about AI who feel intimidated by tech but want quick wins",
+  "seed_creators": [
+    "nextbysophie",
+    "withkundall",
+    "aiwithsachi",
+    "itsmariahbrunner",
+    "leadwithzoe"
+  ],
+  "content_pillars": [
+    "AI tool of the day (quick demo/screenshot-style)",
+    "Before/after: task done manually vs with AI",
+    "Myth-busting AI misconceptions",
+    "3-step tutorials (carousel)",
+    "Relatable AI fails / funny moments"
+  ],
+  "post_formats": [
+    "carousel",
+    "single_image_quote"
+  ],
+  "posting_cadence": {
+    "days": ["Mon", "Wed", "Fri"],
+    "time_local": "18:00",
+    "timezone": "America/New_York"
+  }
+}

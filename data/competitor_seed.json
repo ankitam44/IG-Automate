@@ -1,0 +1,13 @@
+{
+  "_instructions": "Free tier has no automated Instagram scraper. Manually add reference posts you like from the seed creators here (screenshot the post, describe format/hook/caption). The research agent uses this as ground truth until enough of your own post history exists to learn from directly. Add 3-5 entries per creator when you have time; the system works with zero entries too, just less informed at first.",
+  "reference_posts": [
+    {
+      "creator": "nextbysophie",
+      "format": "carousel",
+      "hook": "",
+      "topic": "",
+      "why_it_worked": "",
+      "notes": ""
+    }
+  ]
+}

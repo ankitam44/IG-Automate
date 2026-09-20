@@ -1,0 +1,2 @@
+# No third-party SDKs required -- everything uses stdlib urllib to stay
+# dependency-free and avoid version drift in GitHub Actions.
