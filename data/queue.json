@@ -1,3 +1,18 @@
 {
-  "posts": []
+  "posts": [
+    {
+      "id": "3801e72a5f",
+      "status": "ready",
+      "format": "carousel",
+      "pillar": "3\u2011step tutorials (carousel)",
+      "caption": "Think GPT\u20116 can\u2019t help with your grocery list? Think again \u2013 3 steps to an AI\u2011powered list \ud83d\uded2\u2728 Comment \u2018LIST\u2019 for a free prompt sheet!\n\n#AI #GPT6 #TechTips #EasyAI #EverydayAI #LifeHacks #GroceryList #AItools #NoJargon #FunTech",
+      "image_paths": [
+        "data/generated/images/3801e72a5f_0.jpg",
+        "data/generated/images/3801e72a5f_1.jpg",
+        "data/generated/images/3801e72a5f_2.jpg"
+      ],
+      "scheduled_for": "2026-09-25T18:00:00-04:00",
+      "created_at": "2026-09-24T16:43:22.132902Z"
+    }
+  ]
 }
