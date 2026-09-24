@@ -1,17 +1,16 @@
 {
-  "summary": "We\u2019re kicking off with a fun\u2011focused, low\u2011jargon approach that leans on proven formats like quick\u2011demo carousels and relatable before/after reels\u2014these have driven high engagement for similar creators even without past data for us. By surfacing bite\u2011sized wins (e.g., \u201cTurn a boring email into a meme in 3 clicks\u201d) and myth\u2011busting bits, we\u2019ll tap the audience\u2019s curiosity while keeping the vibe light and encouraging.",
+  "summary": "High\u2011engagement posts from similar creators use bold, relatable claims and clear CTAs (e.g., \u201ccomment X for a free guide\u201d). Single\u2011image quotes with punchy hooks and a playful tone drive likes and comments, while carousel tutorials add value and keep viewers swiping.",
   "recommended_pillars": [
     "AI tool of the day",
-    "Before/after: manual vs AI",
     "Myth\u2011busting AI misconceptions",
-    "3\u2011step tutorials (carousel)",
-    "Relatable AI fails / funny moments"
+    "Before/after: manual vs AI",
+    "3\u2011step tutorials (carousel)"
   ],
   "recommended_formats": [
-    "carousel",
-    "single_image_quote"
+    "single_image_quote",
+    "carousel"
   ],
-  "notes": "Hook ideas: \u2022 \u201cClaude Opus 5.5 just learned to write jokes\u2014see it in action in 15 seconds!\u201d (use a quick screen\u2011record of a simple prompt). \u2022 \u201cGPT\u20116 Sol & Luna sound like space rockets, but they\u2019re actually free AI photo editors\u2014here\u2019s how to make your selfie pop.\u201d \u2022 \u201cMyth: AI will replace your brain. Reality: It can help you write a grocery list in under a minute\u2014watch the before/after.\u201d Visual style: bright pastel palettes, bold handwritten\u2011style fonts, playful emojis, and simple step\u2011by\u2011step graphics. Captions: start with a question or surprise fact, keep sentences <20 words, add a CTA like \u201cTry it today and tag us!\u201d Use trending headlines as hook frames but translate them into everyday scenarios (e.g., \u201cWhat if your phone could \u2018gzip\u2019 a whole paragraph? It can\u2014here\u2019s the cheat sheet\u201d). Post schedule: 3 carousels (tool demo, 3\u2011step tutorial, myth bust) and 2 single\u2011image quotes (fun AI fact, relatable fail) spread across the week to maintain momentum.",
+  "notes": "Hook ideas: \u2022 \u201cClaude just learned to design my coffee logo \u2013 and it only took 30 seconds \u2615\ud83e\udd16\u201d (ties to Claude Opus 5.5). \u2022 \u201cThink GPT\u20116 can\u2019t help with your grocery list? Think again \u2013 3 steps to a AI\u2011powered list \ud83d\uded2\u2728\u201d. Use a CTA like \u201ccomment \u2018COFFEE\u2019 for a free prompt sheet\u201d. Visual style: bright background, bold sans\u2011serif text overlay, a small doodle or emoji that illustrates the claim, and a tiny brand logo in the corner. Keep captions under 150 characters, start with a playful statement, follow with a simple benefit, then the CTA. Leverage trending headlines by framing them as everyday wins (\u201cYour phone can now run AI\u2011powered shortcuts thanks to Snapdragon X2 \u2013 here\u2019s how to set one up in 3 taps\u201d). Post 3\u20114 times a week: 2 single\u2011image quotes with strong hooks and CTAs, 1 carousel tutorial, 1 quick before/after carousel. Engage early: reply to first 20 comments with emojis to boost algorithmic reach.",
   "paused_pillars": [],
   "paused_formats": [],
   "performance_snapshot": {
@@ -35,5 +34,5 @@
     "Can gzip be a language model?"
   ],
   "decision_log": [],
-  "generated_at": "2026-09-24T16:25:17.669664Z"
+  "generated_at": "2026-09-24T16:38:50.463619Z"
 }
