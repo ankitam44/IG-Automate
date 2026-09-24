@@ -1,3 +1,19 @@
 {
-  "posts": []
+  "posts": [
+    {
+      "id": "50e7b54892",
+      "status": "ready",
+      "format": "carousel",
+      "pillar": "3-step tutorials",
+      "caption": "\ud83d\ude80 Ready to hack your grocery game? AI writes your list in seconds, saving you time and money. Comment \u2018COFFEE\u2019 for a free prompt sheet!\n\n#AI #TechTips #EasyAI #AIforAll #GroceryHack #ClaudeOpus #GPT6 #NoCode #PromptHack #EverydayAI",
+      "image_paths": [
+        "data/generated/images/50e7b54892_0.png",
+        "data/generated/images/50e7b54892_1.png",
+        "data/generated/images/50e7b54892_2.png",
+        "data/generated/images/50e7b54892_3.png"
+      ],
+      "scheduled_for": "2026-09-25T18:00:00-04:00",
+      "created_at": "2026-09-24T17:05:48.210500Z"
+    }
+  ]
 }
