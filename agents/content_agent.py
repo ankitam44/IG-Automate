@@ -85,19 +85,28 @@ card graphic (like a Canva-style carousel post) -- NOT a photo, so never
 describe a photo or illustration. Each slide must use one of these four
 templates:
 
-- "hook": a big bold statement. Fields: headline (<=70 chars), subtext
-  (optional, <=90 chars), badge (optional, <=18 chars, a short punchy label
-  like "SAVE THIS"). Good for hooks, myths, relatable moments.
+Every template except "list" can take an optional "highlight" field: a
+SHORT phrase (2-4 words) that must be an EXACT substring of that template's
+headline/title, which gets rendered with a marker-highlighter effect. Only
+include it if you can quote the exact substring -- an approximate or
+paraphrased "highlight" won't match and will be silently ignored.
+
+- "hook": a big bold statement. Fields: headline (<=70 chars), highlight
+  (optional, exact substring of headline), subtext (optional, <=90 chars),
+  badge (optional, <=18 chars, a short punchy label like "SAVE THIS"). Good
+  for hooks, myths, relatable moments.
 - "spotlight": headline + description + a highlighted info card. Fields:
-  headline (<=70 chars), description (<=110 chars), card_title (<=30 chars),
-  card_body (<=110 chars), pills (optional list of 2-4 short tags like
-  "FREE"). Good for "AI tool of the day".
+  headline (<=70 chars), highlight (optional, exact substring of headline),
+  description (<=110 chars), card_title (<=30 chars), card_body (<=110
+  chars), pills (optional list of 2-4 short tags like "FREE"). Good for "AI
+  tool of the day".
 - "list": a title plus 2-4 small cards. Fields: title (<=60 chars), items
   (list of {{"label": "<=30 chars", "bullets": ["<=45 chars", ...max 2]}}).
   Good for tutorials/steps/roundups.
 - "bars": a title plus labeled comparison meters. Fields: title (<=60
-  chars), bars (list of {{"label": "<=20 chars", "value": 0-100}}, 2-3
-  items), caption (optional, <=90 chars). Good for before/after or X vs Y.
+  chars), highlight (optional, exact substring of title), bars (list of
+  {{"label": "<=20 chars", "value": 0-100}}, 2-3 items), caption (optional,
+  <=90 chars). Good for before/after or X vs Y.
 
 Return ONLY valid JSON: a list of {n} objects, each with this exact shape:
 {{

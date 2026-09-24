@@ -3,16 +3,24 @@ headless browser (Playwright + Chromium), instead of asking a diffusion
 model (pollinations.ai) to generate an image from a text prompt.
 
 This exists because the account's actual inspiration posts (bold
-typography, solid color blocks, card/list layouts, no photorealistic
-imagery) are graphic design, not photos -- a diffusion model is the wrong
-tool for that and reliably produces garbled text and generic stock-photo
-compositions instead. A real browser rendering real HTML text is free,
-crisp, and actually legible.
+typography, saturated color blocks, card/list layouts, marker-highlight
+text, sticker badges -- no photorealistic imagery) are graphic design, not
+photos -- a diffusion model is the wrong tool for that and reliably
+produces garbled text and generic stock-photo compositions instead. A real
+browser rendering real HTML text is free, crisp, and actually legible.
+
+v2: the first version worked but looked flat -- soft pastel gradients,
+plain text, no decoration. This version uses saturated solid backgrounds,
+a dot-grid texture, a highlighter-marker effect for a headline's key
+phrase, and rotated sticker badges, closer to the account's actual
+inspiration posts. What it still can't do (no custom illustration budget):
+hand-drawn mascots, 3D graphics, or bespoke icons -- those need real
+drawn assets, not CSS.
 
 Four templates cover most of this account's content pillars:
-  hook      - a big bold statement slide (myth-busting, relatable fails,
-              hooks). Inspired by marker-highlight quote card styles.
-  spotlight - eyebrow + counter header, headline, description, a
+  hook      - a big bold statement slide, with an optional highlighted
+              phrase and a rotated sticker badge.
+  spotlight - eyebrow badge + counter header, headline, description, a
               highlighted info card. Good for "AI tool of the day".
   list      - a small grid of note-style cards, each with a label and a
               few bullet points. Good for tutorials and roundups.
@@ -20,7 +28,6 @@ Four templates cover most of this account's content pillars:
               before/after or any "X vs Y" content.
 """
 import html as html_escape
-import os
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
@@ -28,11 +35,16 @@ from playwright.sync_api import sync_playwright
 WIDTH = 1080
 HEIGHT = 1350
 
+# Saturated, high-contrast palettes -- solid bold backgrounds (not pastel
+# gradients), a marker color for highlighter-style text emphasis, and a
+# deep ink color used for text inside white cards.
 PALETTES = [
-    {"bg": "#FDF3E7", "bg2": "#FCE8D5", "text": "#241C15", "accent": "#E4572E", "accent2": "#2A6F63"},
-    {"bg": "#EAF2FF", "bg2": "#DCE9FF", "text": "#141C2B", "accent": "#3B5BDB", "accent2": "#F2545B"},
-    {"bg": "#FFF1F5", "bg2": "#FFE1EA", "text": "#2B1420", "accent": "#D6336C", "accent2": "#0B7285"},
-    {"bg": "#F1F8EE", "bg2": "#E1F0DA", "text": "#1B2A1A", "accent": "#2F9E44", "accent2": "#E8590C"},
+    {"bg": "#FF6B4A", "text": "#FFFFFF", "ink": "#1A1A2E", "marker": "#FFE066"},
+    {"bg": "#3D5AFE", "text": "#FFFFFF", "ink": "#0B1F3A", "marker": "#FF6B9D"},
+    {"bg": "#C6F135", "text": "#101820", "ink": "#101820", "marker": "#FF3D71"},
+    {"bg": "#7C4DFF", "text": "#FFFFFF", "ink": "#1A0F2E", "marker": "#FFE066"},
+    {"bg": "#FF3D71", "text": "#FFFFFF", "ink": "#2A0A14", "marker": "#FFE066"},
+    {"bg": "#00C2A8", "text": "#062521", "ink": "#062521", "marker": "#FF6B4A"},
 ]
 
 
@@ -44,10 +56,29 @@ def _esc(s: str) -> str:
     return html_escape.escape(str(s or ""), quote=True)
 
 
+def _marker_highlight(text: str, phrase: str, palette: dict) -> str:
+    """Wraps the first occurrence of `phrase` inside `text` (case-insensitive)
+    in a highlighter-marker style span. Falls back to plain escaped text if
+    the phrase is empty or not actually found -- never silently mangles
+    text by guessing."""
+    text = text or ""
+    if not phrase:
+        return _esc(text)
+    idx = text.lower().find(phrase.lower())
+    if idx == -1:
+        return _esc(text)
+    before, matched, after = text[:idx], text[idx:idx + len(phrase)], text[idx + len(phrase):]
+    marker_span = (
+        f'<span style="background: linear-gradient(180deg, transparent 55%, {palette["marker"]} 55%); '
+        f'padding: 0 2px;">{_esc(matched)}</span>'
+    )
+    return f"{_esc(before)}{marker_span}{_esc(after)}"
+
+
 FONT_LINK = (
     '<link rel="preconnect" href="https://fonts.googleapis.com">'
     '<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700;900&'
-    'family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">'
+    'family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">'
 )
 
 BASE_CSS = """
@@ -55,7 +86,9 @@ BASE_CSS = """
 html, body { margin: 0; padding: 0; }
 body {
   width: __WIDTH__px; height: __HEIGHT__px;
-  background: linear-gradient(155deg, __BG__ 0%, __BG2__ 100%);
+  background-color: __BG__;
+  background-image: radial-gradient(__TEXT__22 2.5px, transparent 2.5px);
+  background-size: 34px 34px;
   color: __TEXT__;
   font-family: 'Work Sans', sans-serif;
   display: flex; flex-direction: column;
@@ -65,16 +98,34 @@ body {
 .headline-font { font-family: 'Fraunces', serif; }
 .chrome-top {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 64px 72px 0;
-  font-size: 22px; font-weight: 600; letter-spacing: 0.08em;
-  text-transform: uppercase; color: __ACCENT2__;
+  padding: 56px 64px 0;
+}
+.eyebrow-badge {
+  display: inline-block;
+  background: __TEXT__;
+  color: __BG__;
+  font-size: 19px; font-weight: 800; letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 8px 18px;
+  border-radius: 999px;
+  transform: rotate(-2deg);
+}
+.counter {
+  font-size: 22px; font-weight: 700; color: __TEXT__;
+  background: __BG__; border: 2px solid __TEXT__;
+  padding: 6px 14px; border-radius: 999px;
 }
 .chrome-dots {
-  position: absolute; bottom: 48px; left: 0; right: 0;
+  position: absolute; bottom: 44px; left: 0; right: 0;
   display: flex; justify-content: center; gap: 10px;
 }
-.dot { width: 10px; height: 10px; border-radius: 50%; background: __TEXT__33; }
-.dot.active { background: __ACCENT__; width: 28px; border-radius: 6px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: __TEXT__44; }
+.dot.active { background: __TEXT__; width: 30px; border-radius: 6px; }
+.card {
+  background: #FFFFFF; color: __INK__;
+  border-radius: 22px;
+  box-shadow: 10px 10px 0px 0px __TEXT__; border: 3px solid __INK__;
+}
 """
 
 
@@ -82,11 +133,9 @@ def _render_base_css(palette: dict) -> str:
     return (
         BASE_CSS.replace("__WIDTH__", str(WIDTH))
         .replace("__HEIGHT__", str(HEIGHT))
-        .replace("__BG2__", palette["bg2"])
         .replace("__BG__", palette["bg"])
         .replace("__TEXT__", palette["text"])
-        .replace("__ACCENT2__", palette["accent2"])
-        .replace("__ACCENT__", palette["accent"])
+        .replace("__INK__", palette["ink"])
     )
 
 
@@ -96,11 +145,9 @@ def _chrome(spec: dict, palette: dict, inner: str) -> str:
     eyebrow = spec.get("eyebrow", "")
     top_row = ""
     if eyebrow or total > 1:
-        top_row = f"""
-        <div class="chrome-top">
-          <span>{_esc(eyebrow)}</span>
-          <span>{index:02d} / {total:02d}</span>
-        </div>"""
+        eyebrow_html = f'<span class="eyebrow-badge">{_esc(eyebrow)}</span>' if eyebrow else "<span></span>"
+        counter_html = f'<span class="counter">{index:02d} / {total:02d}</span>' if total > 1 else ""
+        top_row = f'<div class="chrome-top">{eyebrow_html}{counter_html}</div>'
     dots = ""
     if total > 1:
         dot_spans = "".join(
@@ -119,46 +166,50 @@ def _chrome(spec: dict, palette: dict, inner: str) -> str:
 
 
 def _template_hook(spec: dict, palette: dict) -> str:
-    headline = _esc(spec.get("headline", ""))
+    headline_text = spec.get("headline", "")
+    headline = _marker_highlight(headline_text, spec.get("highlight", ""), palette)
     subtext = _esc(spec.get("subtext", ""))
     badge = _esc(spec.get("badge", ""))
     inner = f"""
-    <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:center; padding: 0 80px;">
-      <div class="headline-font" style="font-size: 76px; font-weight: 700; line-height: 1.12; color: {palette['text']};">
+    <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:center; padding: 0 76px;">
+      <div class="headline-font" style="font-size: 78px; font-weight: 800; line-height: 1.1;">
         {headline}
       </div>
-      {f'<div style="margin-top: 32px; font-size: 30px; font-weight: 500; color: {palette["accent2"]}; transform: rotate(-1.5deg);">{subtext}</div>' if subtext else ''}
+      {f'<div style="margin-top: 30px; font-size: 30px; font-weight: 600; transform: rotate(-1.2deg); display: inline-block; max-width: 80%;">{subtext}</div>' if subtext else ''}
     </div>
-    {f'''<div style="position:absolute; bottom: 100px; right: 72px; width: 148px; height: 148px; border-radius: 50%; background: {palette["accent"]}; color: white; display:flex; align-items:center; justify-content:center; text-align:center; font-size: 18px; font-weight: 700; line-height:1.2; padding: 12px; transform: rotate(8deg);">{badge}</div>''' if badge else ''}
+    {f'''<div style="position:absolute; bottom: 96px; right: 68px; width: 156px; height: 156px; border-radius: 50%;
+                background: {palette["marker"]}; color: {palette["ink"]}; border: 3px solid {palette["ink"]};
+                display:flex; align-items:center; justify-content:center; text-align:center;
+                font-size: 19px; font-weight: 800; line-height:1.2; padding: 14px; transform: rotate(9deg);">{badge}</div>''' if badge else ''}
     """
     return _chrome(spec, palette, inner)
 
 
 def _template_spotlight(spec: dict, palette: dict) -> str:
-    headline = _esc(spec.get("headline", ""))
+    headline_text = spec.get("headline", "")
+    headline = _marker_highlight(headline_text, spec.get("highlight", ""), palette)
     description = _esc(spec.get("description", ""))
     card_title = _esc(spec.get("card_title", ""))
     card_body = _esc(spec.get("card_body", ""))
     pills = spec.get("pills", [])
     pills_html = "".join(
-        f'<span style="background:{palette["bg"]}; border:1px solid {palette["text"]}22; '
-        f'border-radius: 999px; padding: 8px 18px; font-size: 18px; font-weight: 600; margin-right: 10px;">'
+        f'<span style="background:{palette["marker"]}; color:{palette["ink"]}; border: 2px solid {palette["ink"]}; '
+        f'border-radius: 999px; padding: 7px 16px; font-size: 17px; font-weight: 700; margin-right: 8px; display: inline-block; margin-top: 6px;">'
         f'{_esc(p)}</span>'
         for p in pills
     )
     inner = f"""
-    <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; padding: 0 72px;">
-      <div class="headline-font" style="font-size: 58px; font-weight: 700; line-height: 1.15;">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; padding: 0 68px;">
+      <div class="headline-font" style="font-size: 56px; font-weight: 800; line-height: 1.15;">
         {headline}
       </div>
-      <div style="font-size: 26px; line-height: 1.5; margin-top: 22px; color: {palette['text']}cc;">
+      <div style="font-size: 25px; line-height: 1.5; margin-top: 20px; font-weight: 500;">
         {description}
       </div>
-      <div style="margin-top: 40px; background: white; border-radius: 24px; padding: 36px;
-                  box-shadow: 0 18px 40px {palette['text']}14; border: 1px solid {palette['text']}12;">
-        <div class="headline-font" style="font-size: 30px; font-weight: 700; color: {palette['accent']};">{card_title}</div>
-        <div style="font-size: 22px; line-height: 1.5; margin-top: 14px; color: {palette['text']}dd;">{card_body}</div>
-        {f'<div style="margin-top: 22px;">{pills_html}</div>' if pills else ''}
+      <div class="card" style="margin-top: 36px; padding: 34px; transform: rotate(-0.6deg);">
+        <div class="headline-font" style="font-size: 29px; font-weight: 700;">{card_title}</div>
+        <div style="font-size: 21px; line-height: 1.5; margin-top: 12px; opacity: 0.85;">{card_body}</div>
+        {f'<div style="margin-top: 18px;">{pills_html}</div>' if pills else ''}
       </div>
     </div>
     """
@@ -166,23 +217,26 @@ def _template_spotlight(spec: dict, palette: dict) -> str:
 
 
 def _template_list(spec: dict, palette: dict) -> str:
-    title = _esc(spec.get("title", ""))
+    title_text = spec.get("title", "")
+    title = _marker_highlight(title_text, spec.get("highlight", ""), palette)
     items = spec.get("items", [])
+    rotations = [-1.2, 1, -0.8, 1.4]
     cards = ""
-    for item in items:
+    for n, item in enumerate(items):
         bullets = "".join(
-            f'<div style="font-size: 19px; line-height: 1.5; margin-top: 6px;">&bull; {_esc(b)}</div>'
+            f'<div style="font-size: 18px; line-height: 1.5; margin-top: 6px;">&bull; {_esc(b)}</div>'
             for b in item.get("bullets", [])
         )
+        rot = rotations[n % len(rotations)]
         cards += f"""
-        <div style="background: white; border-radius: 20px; padding: 26px; box-shadow: 0 10px 24px {palette['text']}12;">
-          <div class="headline-font" style="font-size: 24px; font-weight: 700; color: {palette['accent']};">{_esc(item.get('label', ''))}</div>
+        <div class="card" style="padding: 24px; transform: rotate({rot}deg);">
+          <div class="headline-font" style="font-size: 23px; font-weight: 700;">{_esc(item.get('label', ''))}</div>
           {bullets}
         </div>"""
     inner = f"""
-    <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; padding: 0 64px;">
-      <div class="headline-font" style="font-size: 50px; font-weight: 700; line-height: 1.15;">{title}</div>
-      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 32px;">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; padding: 0 60px;">
+      <div class="headline-font" style="font-size: 50px; font-weight: 800; line-height: 1.15;">{title}</div>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; margin-top: 36px;">
         {cards}
       </div>
     </div>
@@ -191,24 +245,27 @@ def _template_list(spec: dict, palette: dict) -> str:
 
 
 def _template_bars(spec: dict, palette: dict) -> str:
-    title = _esc(spec.get("title", ""))
+    title_text = spec.get("title", "")
+    title = _marker_highlight(title_text, spec.get("highlight", ""), palette)
     caption = _esc(spec.get("caption", ""))
     bars = spec.get("bars", [])
     bars_html = ""
     for b in bars:
         pct = max(0, min(100, int(b.get("value", 0))))
         bars_html += f"""
-        <div style="margin-top: 28px;">
-          <div style="font-size: 22px; font-weight: 600; margin-bottom: 10px;">{_esc(b.get('label', ''))}</div>
-          <div style="background: {palette['text']}14; border-radius: 999px; height: 34px; overflow: hidden;">
-            <div style="width: {pct}%; height: 100%; background: {palette['accent']}; border-radius: 999px;"></div>
+        <div style="margin-top: 26px;">
+          <div style="font-size: 22px; font-weight: 700; margin-bottom: 10px; color: {palette['ink']};">{_esc(b.get('label', ''))}</div>
+          <div style="background: {palette['bg']}33; border: 2px solid {palette['ink']}55; border-radius: 999px; height: 36px; overflow: hidden;">
+            <div style="width: {pct}%; height: 100%; background: {palette['marker']};"></div>
           </div>
         </div>"""
     inner = f"""
-    <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:center; padding: 0 80px;">
-      <div class="headline-font" style="font-size: 54px; font-weight: 700; line-height: 1.15;">{title}</div>
-      {bars_html}
-      {f'<div style="margin-top: 34px; font-size: 22px; color: {palette["text"]}cc;">{caption}</div>' if caption else ''}
+    <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:center; padding: 0 76px;">
+      <div class="headline-font" style="font-size: 52px; font-weight: 800; line-height: 1.15;">{title}</div>
+      <div class="card" style="margin-top: 30px; padding: 32px 34px 20px;">
+        {bars_html}
+      </div>
+      {f'<div style="margin-top: 26px; font-size: 21px; font-weight: 500;">{caption}</div>' if caption else ''}
     </div>
     """
     return _chrome(spec, palette, inner)
