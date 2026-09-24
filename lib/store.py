@@ -23,3 +23,10 @@ def load_config(name: str) -> dict:
     path = Path(__file__).resolve().parent.parent / "config" / f"{name}.json"
     with open(path, "r") as f:
         return json.load(f)
+
+
+def save_config(name: str, data: dict) -> None:
+    path = Path(__file__).resolve().parent.parent / "config" / f"{name}.json"
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2)
+        f.write("\n")

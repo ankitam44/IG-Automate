@@ -6,6 +6,9 @@ mentioned in a prompt and then ignored."""
 MIN_SAMPLES = 3
 UNDERPERFORM_RATIO = 0.5
 
+MIN_TREND_SAMPLES = 6
+TREND_CHANGE_RATIO = 0.15
+
 
 def _engagement_score(insights: dict) -> float:
     return (
@@ -24,6 +27,36 @@ def _summarize(groups: dict) -> dict:
         }
         for key, scores in groups.items()
     }
+
+
+def _engagement_trend(posts: list[dict]) -> str | None:
+    """Compares recent posts to older posts to detect a real direction, not
+    noise. Needs MIN_TREND_SAMPLES posts with both a timestamp and insights;
+    below that, returns None (no opinion) rather than guessing from too few
+    data points."""
+    scored = [
+        (p["published_at"], _engagement_score(p["insights"]))
+        for p in posts
+        if p.get("insights") and p.get("published_at")
+    ]
+    if len(scored) < MIN_TREND_SAMPLES:
+        return None
+
+    scored.sort(key=lambda t: t[0])
+    midpoint = len(scored) // 2
+    older_scores = [s for _, s in scored[:midpoint]]
+    recent_scores = [s for _, s in scored[midpoint:]]
+    older_avg = sum(older_scores) / len(older_scores)
+    recent_avg = sum(recent_scores) / len(recent_scores)
+
+    if older_avg == 0:
+        return "improving" if recent_avg > 0 else None
+    change = (recent_avg - older_avg) / older_avg
+    if change >= TREND_CHANGE_RATIO:
+        return "improving"
+    if change <= -TREND_CHANGE_RATIO:
+        return "declining"
+    return "flat"
 
 
 def analyze(published_log: dict) -> dict:
@@ -63,4 +96,5 @@ def analyze(published_log: dict) -> dict:
         "underperforming_pillars": underperformers(pillar_stats),
         "underperforming_formats": underperformers(format_stats),
         "top_pillars": [p for p, _ in top_pillars[:3]],
+        "engagement_trend": _engagement_trend(published_log.get("posts", [])),
     }

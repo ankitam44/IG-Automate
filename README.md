@@ -58,13 +58,14 @@ real decisions from data, in code, not just in a prompt:
 - **Self-healing publish queue.** A post that fails to publish is retried
   automatically; after 3 failures it's marked `abandoned` instead of being
   retried hourly forever with no resolution.
-
-**Deliberately not automated:** posting cadence (`config/niche.json`'s
-`days`/`time_local`) is never auto-adjusted by the pipeline, even though
-`research_agent` has the engagement data to justify it. That file is yours;
-silently rewriting your posting schedule felt like the wrong kind of
-autonomy. If you want cadence to react to performance too, say so and it's
-a small addition on top of the pause/resume logic that already exists.
+- **Adaptive posting cadence.** Once there are 6+ published, scored posts,
+  `research_agent` compares recent posts to older ones. A clear trend (15%+
+  change) moves `config/niche.json`'s `posting_cadence.days` one step on a
+  fixed ladder (1x -> 2x -> 3x -> 4x -> 5x per week; see
+  `lib/cadence.py:CADENCE_LADDER`): up on rising engagement, down on
+  falling. It never jumps more than one step per week and is capped between
+  1x and 5x/week, so it can't drift to posting daily or stopping outright.
+  A flat trend, or not enough data yet, changes nothing.
 
 ## One-time setup
 

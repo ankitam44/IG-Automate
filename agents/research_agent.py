@@ -12,7 +12,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from lib import gemini_client, performance, store, trend_client  # noqa: E402
+from lib import cadence, gemini_client, performance, store, trend_client  # noqa: E402
 
 
 def build_prompt(niche: dict, competitors: dict, perf: dict, trends: list[str]) -> str:
@@ -43,9 +43,12 @@ By pillar:
 By format:
 {format_lines}
 Top performing pillars so far: {', '.join(perf['top_pillars']) or 'not enough data'}
+Engagement trend (recent posts vs older posts): {perf['engagement_trend'] or 'not enough data yet'}
 Note: pillars/formats with enough samples and well below-average engagement will be
 automatically paused by the pipeline regardless of what you recommend here, so lean
-into what's working rather than trying to rescue a clear underperformer."""
+into what's working rather than trying to rescue a clear underperformer. Posting
+cadence is also adjusted automatically from this same trend -- mention it in your
+summary if it changed, but don't recommend a cadence change yourself."""
 
     trend_block = (
         "\n".join(f"- {t}" for t in trends)
@@ -128,6 +131,12 @@ def main():
     result = gemini_client.generate_json(prompt)
 
     decision_log = apply_performance_decisions(result, niche, perf)
+
+    new_cadence, cadence_decision = cadence.adjust_for_trend(niche["posting_cadence"], perf["engagement_trend"])
+    if cadence_decision:
+        niche["posting_cadence"] = new_cadence
+        store.save_config("niche", niche)
+        decision_log.append(cadence_decision)
 
     result["paused_pillars"] = perf["underperforming_pillars"]
     result["paused_formats"] = perf["underperforming_formats"]
