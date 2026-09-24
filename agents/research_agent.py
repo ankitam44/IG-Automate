@@ -1,6 +1,7 @@
-"""Weekly: synthesize a content strategy from the niche config, manually
-curated competitor reference posts, real performance data from past posts,
-and current AI/tech trend signal. Writes data/strategy.json.
+"""Weekly: synthesize a content strategy from the niche config, competitor
+reference posts (manually curated + a live Apify scrape when configured),
+real performance data from past posts, and current AI/tech trend signal.
+Writes data/strategy.json.
 
 This is the closed-loop step: analytics_agent records engagement on
 published posts, and this agent is what actually reads it back and acts on
@@ -12,19 +13,33 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from lib import cadence, groq_client, performance, store, trend_client  # noqa: E402
+from lib import apify_client, cadence, groq_client, performance, store, trend_client  # noqa: E402
 
 
-def build_prompt(niche: dict, competitors: dict, perf: dict, trends: list[str]) -> str:
+def build_prompt(
+    niche: dict, competitors: dict, perf: dict, trends: list[str], live_competitor_posts: list[dict]
+) -> str:
     ref_posts = [
         p for p in competitors.get("reference_posts", [])
         if p.get("hook") or p.get("topic")
     ]
-    ref_block = "\n".join(
+    manual_block = "\n".join(
         f"- @{p['creator']} ({p['format']}): hook=\"{p.get('hook','')}\" "
         f"topic=\"{p.get('topic','')}\" why_it_worked=\"{p.get('why_it_worked','')}\""
         for p in ref_posts
-    ) or "(none added yet -- rely on general knowledge of this niche and these creator styles)"
+    ) or "(none added manually)"
+
+    if live_competitor_posts:
+        top_live = sorted(
+            live_competitor_posts, key=lambda p: p["likes"] + p["comments"], reverse=True
+        )[:10]
+        live_block = "\n".join(
+            f"- @{p['creator']} ({p['format']}): \"{p['hook']}\" "
+            f"({p['likes']} likes, {p['comments']} comments)"
+            for p in top_live
+        )
+    else:
+        live_block = "(no live scrape this run -- APIFY_API_TOKEN not set or scrape failed)"
 
     if perf["sample_size"] == 0:
         perf_block = "(no published post data yet -- this is the first strategy run, rely on general knowledge)"
@@ -62,8 +77,13 @@ Tone: {niche['tone']}. Audience: {niche['audience']}.
 
 Creators whose style we're inspired by: {', '.join('@' + c for c in niche['seed_creators'])}.
 
-Reference posts we know worked for these creators:
-{ref_block}
+Manually curated reference posts (added by hand, includes why they worked):
+{manual_block}
+
+Live-scraped recent posts from these creators this week (Apify, sorted by
+engagement, no "why it worked" -- infer that yourself from the caption and
+the numbers):
+{live_block}
 
 Our own post performance so far:
 {perf_block}
@@ -126,8 +146,11 @@ def main():
 
     perf = performance.analyze(published_log)
     trends = trend_client.get_trending_ai_topics()
+    live_competitor_posts = apify_client.fetch_competitor_reference_posts(niche["seed_creators"])
+    if live_competitor_posts:
+        print(f"Fetched {len(live_competitor_posts)} live competitor posts via Apify")
 
-    prompt = build_prompt(niche, competitors, perf, trends)
+    prompt = build_prompt(niche, competitors, perf, trends, live_competitor_posts)
     result = groq_client.generate_json(prompt)
 
     decision_log = apply_performance_decisions(result, niche, perf)

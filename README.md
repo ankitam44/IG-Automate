@@ -10,8 +10,10 @@ Style inspiration: @nextbysophie, @withkundall, @aiwithsachi, @itsmariahbrunner,
 
 ```
 research_agent   (weekly)   -> reads config/niche.json + data/competitor_seed.json
-                                + real engagement data from published_log.json
-                                + live AI/tech trend signal (Hacker News, free, no key)
+                                + a live scrape of each seed creator's recent posts
+                                (Apify, optional -- see setup) + real engagement data
+                                from published_log.json + live AI/tech trend signal
+                                (Hacker News, free, no key)
                                 writes data/strategy.json (pillars, formats, notes,
                                 paused_pillars/formats, decision_log)
 
@@ -55,6 +57,17 @@ real decisions from data, in code, not just in a prompt:
   Hacker News stories mentioning AI/GPT/LLM/etc (free, keyless, via
   Algolia's public HN search API) so `content_agent` can riff on what's
   actually being talked about right now, not just the static pillar list.
+- **Live competitor scraping (optional).** `lib/apify_client.py` pulls each
+  seed creator's recent posts (caption, likes, comments) via Apify's
+  Instagram scraper when `APIFY_API_TOKEN` is set, feeding real numbers
+  into the strategy prompt instead of relying only on what you've
+  manually typed into `competitor_seed.json`. Best-effort -- if the token
+  isn't set, or a scrape fails, it falls back to the manual seed file with
+  no error. Worth knowing: this is metered (Apify's free tier gives
+  monthly credit, not unlimited use) and scraping Instagram via a third
+  party sits in a legal gray area their ToS technically doesn't allow,
+  though at "a handful of public accounts, once a week" it's low-risk in
+  practice.
 - **Self-healing publish queue.** A post that fails to publish is retried
   automatically; after 3 failures it's marked `abandoned` instead of being
   retried hourly forever with no resolution.
@@ -77,7 +90,17 @@ real decisions from data, in code, not just in a prompt:
   (`lib/groq_client.py`); if Groq deprecates it, set the `GROQ_MODEL` env
   var/secret to switch without a code change.
 
-### 2. Instagram Business account + Graph API access (free)
+### 2. Apify API token (free, optional)
+- Go to https://console.apify.com/settings/integrations, sign up, copy
+  your API token.
+- Optional: without it, `research_agent` just relies on
+  `data/competitor_seed.json` and general knowledge, same as before. With
+  it, it also live-scrapes each seed creator's recent posts weekly.
+- Free tier gives monthly usage credit (metered, not unlimited) -- fine
+  for a light weekly scrape of ~5 creators, but not something to run
+  constantly while testing.
+
+### 3. Instagram Business account + Graph API access (free)
 - Convert your Instagram account to a Business or Creator account (in-app).
 - Link it to a Facebook Page (required by the Graph API, even though you'll
   never post to the Page itself).
@@ -91,19 +114,20 @@ real decisions from data, in code, not just in a prompt:
 - Find your Instagram Business Account ID via:
   `GET /me/accounts` -> `GET /{page-id}?fields=instagram_business_account`
 
-### 3. Make the repo public
+### 4. Make the repo public
 The publisher needs publicly reachable image URLs (raw.githubusercontent.com).
 Graph API cannot accept direct file uploads. Set this repo to public in
 Settings, or swap `lib/image_client.py`/`publisher_agent.py` for a paid image
 host later if you'd rather stay private.
 
-### 4. Add repo secrets
+### 5. Add repo secrets
 Settings > Secrets and variables > Actions > New repository secret:
 - `GROQ_API_KEY`
+- `APIFY_API_TOKEN` (optional -- see step 2)
 - `IG_BUSINESS_ACCOUNT_ID`
 - `IG_ACCESS_TOKEN`
 
-### 5. Enable Actions and seed content
+### 6. Enable Actions and seed content
 - Go to the Actions tab, enable workflows if prompted.
 - Manually run "Research Agent" once (workflow_dispatch) to generate an
   initial strategy.
@@ -116,9 +140,9 @@ Settings > Secrets and variables > Actions > New repository secret:
   cadence (days/time/timezone). Edit any time; picked up on the next
   research_agent run.
 - `data/competitor_seed.json` -- manually add reference posts from creators
-  you admire (screenshot + describe hook/format/why it worked). Free tier
-  has no automated Instagram scraper, so this is how you seed taste until
-  the account has enough of its own performance data.
+  you admire (screenshot + describe hook/format/why it worked). Supplements
+  the live Apify scrape (if configured) with the "why it worked" reasoning
+  a raw scrape can't give you.
 
 ## Local testing
 
@@ -134,9 +158,11 @@ in Actions rather than locally.)
 
 ## Known limitations (free tier)
 
-- **No automated competitor scraping.** Seed `data/competitor_seed.json`
-  manually. The strategy improves automatically over time as your own
-  posts accumulate engagement data.
+- **Competitor scraping is optional and metered.** Without `APIFY_API_TOKEN`,
+  seed `data/competitor_seed.json` manually. With it, live scraping runs on
+  Apify's free monthly credit, not unlimited -- fine for the pipeline's
+  weekly cadence, not for constant manual re-runs. Also carries some ToS
+  risk inherent to scraping (see "What's actually agentic here" above).
 - **Images only, no reels.** Free video generation isn't good enough yet;
   reels stay a manual/future addition.
 - **Image quality is best-effort.** pollinations.ai is a free public
