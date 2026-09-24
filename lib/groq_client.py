@@ -52,6 +52,10 @@ def _call_once(prompt: str, json_mode: bool) -> str:
         headers={
             "Content-Type": "application/json",
             "Authorization": f"Bearer {_api_key()}",
+            # Cloudflare (in front of Groq's API) blocks requests with no
+            # User-Agent header -- urllib sends none by default, which
+            # surfaces as an opaque 403, not anything wrong with the key.
+            "User-Agent": "ig-automate/1.0",
         },
         method="POST",
     )
