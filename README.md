@@ -10,23 +10,61 @@ Style inspiration: @nextbysophie, @withkundall, @aiwithsachi, @itsmariahbrunner,
 
 ```
 research_agent   (weekly)   -> reads config/niche.json + data/competitor_seed.json
-                                writes data/strategy.json (pillars, formats, notes)
+                                + real engagement data from published_log.json
+                                + live AI/tech trend signal (Hacker News, free, no key)
+                                writes data/strategy.json (pillars, formats, notes,
+                                paused_pillars/formats, decision_log)
 
-content_agent    (2x/week)  -> reads strategy.json, asks Gemini for post concepts,
-                                renders images (pollinations.ai, free), appends
-                                ready posts to data/queue.json
+content_agent    (2x/week)  -> reads strategy.json, asks Gemini for post concepts
+                                (respecting whatever research_agent paused, and
+                                riffing on trending topics where they fit), renders
+                                images (pollinations.ai, free), appends ready posts
+                                to data/queue.json
 
 publisher_agent  (hourly)   -> checks data/queue.json for posts whose scheduled_for
                                 time has passed, publishes via Instagram Graph API,
-                                moves them to data/published_log.json
+                                moves them to data/published_log.json. Retries a
+                                failed post up to 3 times before marking it
+                                "abandoned" so it stops eating hourly retries forever.
 
 analytics_agent  (daily)    -> pulls engagement stats for posts 48h+ old, writes
-                                them into published_log.json so research_agent's
-                                next run can factor in what actually performed
+                                them into published_log.json
 ```
 
 All four run as GitHub Actions on cron schedules -- no server required. State
 lives in JSON files committed back to the repo by the workflows themselves.
+
+### What's actually agentic here
+
+This isn't just four scripts calling an LLM in sequence -- the pipeline makes
+real decisions from data, in code, not just in a prompt:
+
+- **Closed performance loop.** `research_agent` computes an engagement score
+  (likes + comments + 2x saves + 2x shares) per pillar and per format from
+  `published_log.json`'s insights, and feeds the actual numbers into its
+  strategy prompt -- not just "consider performance," the real averages.
+- **Deterministic pause/resume.** Once a pillar or format has 3+ published
+  samples and its average engagement is under half the account's overall
+  average, the pipeline pauses it in code (`apply_performance_decisions` in
+  `agents/research_agent.py`), regardless of what the LLM's own
+  `recommended_pillars`/`recommended_formats` picks. This is enforced, not a
+  suggestion the model can ignore. It never zeroes out the pillar list --
+  if everything's currently underperforming, it keeps generating rather than
+  producing nothing.
+- **Live trend awareness.** `lib/trend_client.py` pulls recent high-point
+  Hacker News stories mentioning AI/GPT/LLM/etc (free, keyless, via
+  Algolia's public HN search API) so `content_agent` can riff on what's
+  actually being talked about right now, not just the static pillar list.
+- **Self-healing publish queue.** A post that fails to publish is retried
+  automatically; after 3 failures it's marked `abandoned` instead of being
+  retried hourly forever with no resolution.
+
+**Deliberately not automated:** posting cadence (`config/niche.json`'s
+`days`/`time_local`) is never auto-adjusted by the pipeline, even though
+`research_agent` has the engagement data to justify it. That file is yours;
+silently rewriting your posting schedule felt like the wrong kind of
+autonomy. If you want cadence to react to performance too, say so and it's
+a small addition on top of the pause/resume logic that already exists.
 
 ## One-time setup
 

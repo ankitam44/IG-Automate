@@ -35,9 +35,31 @@ def next_slots(niche: dict, count: int, already_queued: int) -> list[str]:
     return slots
 
 
+def active_pillars(niche: dict, strategy: dict) -> list[str]:
+    """Filters out whatever research_agent paused for underperformance. Defends
+    against stale/hand-edited strategy.json still listing a paused pillar."""
+    candidates = strategy.get("recommended_pillars") or niche["content_pillars"]
+    paused = set(strategy.get("paused_pillars", []))
+    filtered = [p for p in candidates if p not in paused]
+    return filtered or candidates
+
+
+def active_formats(niche: dict, strategy: dict) -> list[str]:
+    candidates = strategy.get("recommended_formats") or niche["post_formats"]
+    paused = set(strategy.get("paused_formats", []))
+    filtered = [f for f in candidates if f not in paused]
+    return filtered or candidates
+
+
 def build_concept_prompt(niche: dict, strategy: dict, n: int) -> str:
-    pillars = strategy.get("recommended_pillars") or niche["content_pillars"]
-    formats = strategy.get("recommended_formats") or niche["post_formats"]
+    pillars = active_pillars(niche, strategy)
+    formats = active_formats(niche, strategy)
+    trends = strategy.get("trending_topics_used") or []
+    trend_block = (
+        "\n".join(f"- {t}" for t in trends)
+        if trends
+        else "(no trend signal available -- skip topical references)"
+    )
     return f"""You are creating {n} Instagram post concepts for an account about
 "{niche['niche']}" ({niche['description']}). Tone: {niche['tone']}.
 Audience: {niche['audience']}.
@@ -45,6 +67,10 @@ Audience: {niche['audience']}.
 Strategy notes: {strategy.get('notes', '')}
 Content pillars to draw from: {', '.join(pillars)}
 Formats available: {', '.join(formats)}
+
+Recent trending AI/tech headlines you can riff on for relatability (optional,
+only use one if it genuinely fits the fun/low-jargon tone -- don't force it):
+{trend_block}
 
 Return ONLY valid JSON: a list of {n} objects, each with this exact shape:
 {{

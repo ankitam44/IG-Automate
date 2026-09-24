@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from lib import instagram_client, store  # noqa: E402
 
 BRANCH = os.environ.get("GIT_BRANCH", "main")
+MAX_RETRIES = 3
 
 
 def raw_url(repo: str, rel_path: str) -> str:
@@ -34,7 +35,10 @@ def main():
     for post in queue["posts"]:
         scheduled_for = datetime.datetime.fromisoformat(post["scheduled_for"])
         due = scheduled_for.astimezone(datetime.timezone.utc) <= now
-        if post["status"] != "ready" or not due:
+        # Retry a previously failed post too (transient errors happen), but
+        # never touch one already abandoned or not yet due.
+        eligible = post["status"] in ("ready", "failed")
+        if not eligible or not due:
             remaining.append(post)
             continue
 
@@ -46,9 +50,17 @@ def main():
                 container_id = instagram_client.create_image_container(image_urls[0], post["caption"])
             media_id = instagram_client.publish_container(container_id)
         except Exception as e:  # noqa: BLE001
-            print(f"Failed to publish post {post['id']}: {e}")
-            post["status"] = "failed"
+            post["retry_count"] = post.get("retry_count", 0) + 1
             post["error"] = str(e)
+            if post["retry_count"] >= MAX_RETRIES:
+                # A post that fails MAX_RETRIES times in a row is very unlikely
+                # to be a transient blip -- stop burning API calls on it and
+                # surface it clearly instead of retrying forever, silently, hourly.
+                post["status"] = "abandoned"
+                print(f"Abandoning post {post['id']} after {MAX_RETRIES} failed attempts: {e}")
+            else:
+                post["status"] = "failed"
+                print(f"Failed to publish post {post['id']} (attempt {post['retry_count']}/{MAX_RETRIES}): {e}")
             remaining.append(post)
             continue
 
