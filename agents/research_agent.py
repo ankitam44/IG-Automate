@@ -12,7 +12,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from lib import cadence, gemini_client, performance, store, trend_client  # noqa: E402
+from lib import cadence, groq_client, performance, store, trend_client  # noqa: E402
 
 
 def build_prompt(niche: dict, competitors: dict, perf: dict, trends: list[str]) -> str:
@@ -128,7 +128,7 @@ def main():
     trends = trend_client.get_trending_ai_topics()
 
     prompt = build_prompt(niche, competitors, perf, trends)
-    result = gemini_client.generate_json(prompt)
+    result = groq_client.generate_json(prompt)
 
     decision_log = apply_performance_decisions(result, niche, perf)
 

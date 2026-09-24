@@ -15,7 +15,7 @@ research_agent   (weekly)   -> reads config/niche.json + data/competitor_seed.js
                                 writes data/strategy.json (pillars, formats, notes,
                                 paused_pillars/formats, decision_log)
 
-content_agent    (2x/week)  -> reads strategy.json, asks Gemini for post concepts
+content_agent    (2x/week)  -> reads strategy.json, asks Groq for post concepts
                                 (respecting whatever research_agent paused, and
                                 riffing on trending topics where they fit), renders
                                 images (pollinations.ai, free), appends ready posts
@@ -69,15 +69,13 @@ real decisions from data, in code, not just in a prompt:
 
 ## One-time setup
 
-### 1. Gemini API key (free)
-- Go to https://aistudio.google.com/apikey, create a key.
-- Free tier is per-model: 5 requests/minute and 20 requests/day (confirmed
-  via Cloud Console > APIs & Services > generativelanguage.googleapis.com >
-  Quotas -- older docs citing "15 req/min, 1M tokens/day" are stale). This
-  pipeline's real usage (weekly research_agent, 2x/week content_agent) is
-  nowhere near that, but note it if you're testing manually: repeatedly
-  re-running the workflow by hand can burn through a day's quota on one
-  model fast, which looks identical to an outage.
+### 1. Groq API key (free)
+- Go to https://console.groq.com/keys, create a key.
+- Groq runs its own inference hardware rather than sharing capacity the way
+  some free-tier LLM APIs do, so it's less prone to "model overloaded"
+  errors under normal use. Default model is `llama-3.3-70b-versatile`
+  (`lib/groq_client.py`); if Groq deprecates it, set the `GROQ_MODEL` env
+  var/secret to switch without a code change.
 
 ### 2. Instagram Business account + Graph API access (free)
 - Convert your Instagram account to a Business or Creator account (in-app).
@@ -101,7 +99,7 @@ host later if you'd rather stay private.
 
 ### 4. Add repo secrets
 Settings > Secrets and variables > Actions > New repository secret:
-- `GEMINI_API_KEY`
+- `GROQ_API_KEY`
 - `IG_BUSINESS_ACCOUNT_ID`
 - `IG_ACCESS_TOKEN`
 
@@ -146,8 +144,9 @@ in Actions rather than locally.)
   if/when there's budget.
 - **Instagram token expiry.** Long-lived tokens expire after 60 days;
   refresh manually until token-refresh automation is added.
-- **Rate limits.** Gemini free tier (5 req/min, 20 req/day per model) and
-  pollinations.ai can throttle under heavy use; this pipeline's default
-  cadence (2-3 posts/week) stays well within limits, but manual repeated
-  testing (re-running a workflow by hand several times in a row) can hit
-  them.
+- **Rate limits.** Groq and pollinations.ai free tiers can throttle under
+  heavy use; this pipeline's default cadence (2-3 posts/week) stays well
+  within limits. (An earlier version of this pipeline used Gemini, whose
+  free tier turned out to be a tighter 5 req/min / 20 req/day per model
+  with frequent "model overloaded" errors -- switched to Groq for more
+  headroom and reliability.)

@@ -10,7 +10,7 @@ from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from lib import gemini_client, image_client, store  # noqa: E402
+from lib import groq_client, image_client, store  # noqa: E402
 
 IMAGES_DIR = Path(__file__).resolve().parent.parent / "data" / "generated" / "images"
 POSTS_TO_GENERATE = int(os.environ.get("POSTS_TO_GENERATE", "2"))
@@ -95,7 +95,7 @@ def main():
     queue = store.load("queue")
 
     prompt = build_concept_prompt(niche, strategy, POSTS_TO_GENERATE)
-    concepts = gemini_client.generate_json(prompt)
+    concepts = groq_client.generate_json(prompt)
     if isinstance(concepts, dict):
         concepts = concepts.get("posts") or concepts.get("concepts") or [concepts]
 
