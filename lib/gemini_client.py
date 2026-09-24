@@ -20,8 +20,17 @@ import urllib.request
 API_BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 
 # Ordered by preference; first one that works wins. GEMINI_MODEL, if set, is
-# tried first.
-FALLBACK_MODELS = ["gemini-2.5-flash", "gemini-3.5-flash", "gemini-flash-latest"]
+# tried first. Confirmed against this project's actual ListModels response
+# (not guessed from docs/search, which is how gemini-1.5-flash went stale
+# unnoticed) -- includes lite variants since they're generally less
+# rate-limited on the free tier than the full flash models.
+FALLBACK_MODELS = [
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-flash-latest",
+    "gemini-3.5-flash",
+    "gemini-3.1-flash-lite",
+]
 
 TRANSIENT_STATUS_CODES = {429, 500, 502, 503, 504}
 MAX_RETRIES_PER_MODEL = 3
