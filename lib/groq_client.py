@@ -15,9 +15,12 @@ import urllib.request
 
 API_URL = "https://api.groq.com/openai/v1/chat/completions"
 
-# Override with GROQ_MODEL if this ever gets deprecated -- see
-# https://console.groq.com/docs/models for the current list.
-DEFAULT_MODEL = "llama-3.3-70b-versatile"
+# Confirmed against this key's actual /openai/v1/models response, not
+# guessed -- Groq's catalog turns over fast (llama-3.3-70b-versatile, an
+# earlier default here, is already gone). Override with GROQ_MODEL if this
+# one gets deprecated too -- see https://console.groq.com/docs/models, or
+# hit /openai/v1/models directly, for the current list.
+DEFAULT_MODEL = "openai/gpt-oss-120b"
 
 TRANSIENT_STATUS_CODES = {429, 500, 502, 503, 504}
 MAX_RETRIES = 3

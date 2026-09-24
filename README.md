@@ -73,7 +73,7 @@ real decisions from data, in code, not just in a prompt:
 - Go to https://console.groq.com/keys, create a key.
 - Groq runs its own inference hardware rather than sharing capacity the way
   some free-tier LLM APIs do, so it's less prone to "model overloaded"
-  errors under normal use. Default model is `llama-3.3-70b-versatile`
+  errors under normal use. Default model is `openai/gpt-oss-120b`
   (`lib/groq_client.py`); if Groq deprecates it, set the `GROQ_MODEL` env
   var/secret to switch without a code change.
 
