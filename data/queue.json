@@ -1,3 +1,19 @@
 {
-  "posts": []
+  "posts": [
+    {
+      "id": "aadaefe4b8",
+      "status": "ready",
+      "format": "carousel",
+      "pillar": "AI tool of the day",
+      "caption": "\ud83d\ude80 Your coffee logo just got AI\u2011powered in 30 seconds! Easy design wins with Claude Opus 5.5. Comment \u2018COFFEE\u2019 for a free prompt sheet! \u2615\ud83e\udd16\n\n#AI #TechTips #Claude #AIDesign #NoCode #QuickWins #FunTech #AIForAll #PromptHack #InstaAI",
+      "image_paths": [
+        "data/generated/images/aadaefe4b8_0.png",
+        "data/generated/images/aadaefe4b8_1.png",
+        "data/generated/images/aadaefe4b8_2.png",
+        "data/generated/images/aadaefe4b8_3.png"
+      ],
+      "scheduled_for": "2026-09-25T18:00:00-04:00",
+      "created_at": "2026-09-24T19:51:35.290160Z"
+    }
+  ]
 }
