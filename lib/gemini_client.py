@@ -20,18 +20,20 @@ import urllib.request
 API_BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 
 # Ordered by preference; first one that works wins. GEMINI_MODEL, if set, is
-# tried first. Confirmed against this project's actual ListModels response
-# (not guessed from docs/search, which is how gemini-1.5-flash went stale
-# unnoticed) -- includes lite variants since they're generally less
-# rate-limited on the free tier than the full flash models.
-FALLBACK_MODELS = [
-    "gemini-2.5-flash",
-    "gemini-2.5-flash-lite",
-    "gemini-flash-latest",
-    "gemini-3.5-flash",
-    "gemini-3.1-flash-lite",
-]
+# tried first. Confirmed against this project's actual Cloud Console quota
+# page (APIs & Services > generativelanguage.googleapis.com > Quotas), not
+# guessed from docs/search -- that's also how we learned this project's free
+# tier only has quota provisioned for the 3.x model family, not 2.5 (which
+# 404s consistently, not transiently -- there's no quota row for it at all).
+# gemini-flash-latest is kept as a resilient alias since Google can point it
+# at a new model without this list going stale again.
+FALLBACK_MODELS = ["gemini-3.5-flash", "gemini-3.8-flash", "gemini-flash-latest"]
 
+# The free tier here is tight: 5 requests/minute and 20/day PER MODEL (see
+# the Cloud Console quota page above). This pipeline's real usage is weekly
+# for research_agent and 2x/week for content_agent, nowhere near that -- but
+# retrying aggressively during manual testing/debugging can burn through a
+# day's quota on a single model fast, which looks identical to an outage.
 TRANSIENT_STATUS_CODES = {429, 500, 502, 503, 504}
 MAX_RETRIES_PER_MODEL = 3
 BACKOFF_SECONDS = 2

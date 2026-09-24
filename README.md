@@ -71,8 +71,13 @@ real decisions from data, in code, not just in a prompt:
 
 ### 1. Gemini API key (free)
 - Go to https://aistudio.google.com/apikey, create a key.
-- Free tier: ~15 requests/min, 1M tokens/day on gemini-1.5-flash. Enough for
-  this pipeline's volume.
+- Free tier is per-model: 5 requests/minute and 20 requests/day (confirmed
+  via Cloud Console > APIs & Services > generativelanguage.googleapis.com >
+  Quotas -- older docs citing "15 req/min, 1M tokens/day" are stale). This
+  pipeline's real usage (weekly research_agent, 2x/week content_agent) is
+  nowhere near that, but note it if you're testing manually: repeatedly
+  re-running the workflow by hand can burn through a day's quota on one
+  model fast, which looks identical to an outage.
 
 ### 2. Instagram Business account + Graph API access (free)
 - Convert your Instagram account to a Business or Creator account (in-app).
@@ -141,6 +146,8 @@ in Actions rather than locally.)
   if/when there's budget.
 - **Instagram token expiry.** Long-lived tokens expire after 60 days;
   refresh manually until token-refresh automation is added.
-- **Rate limits.** Gemini free tier and pollinations.ai can throttle under
-  heavy use; this pipeline's default cadence (2-3 posts/week) stays well
-  within limits.
+- **Rate limits.** Gemini free tier (5 req/min, 20 req/day per model) and
+  pollinations.ai can throttle under heavy use; this pipeline's default
+  cadence (2-3 posts/week) stays well within limits, but manual repeated
+  testing (re-running a workflow by hand several times in a row) can hit
+  them.
