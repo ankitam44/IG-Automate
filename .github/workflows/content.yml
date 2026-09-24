@@ -21,6 +21,7 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install -r requirements.txt
+      - run: playwright install --with-deps chromium
       - run: python agents/content_agent.py
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}

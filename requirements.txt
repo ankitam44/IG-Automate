@@ -1,2 +1,5 @@
-# No third-party SDKs required -- everything uses stdlib urllib to stay
-# dependency-free and avoid version drift in GitHub Actions.
+# No LLM/API SDKs -- Groq, Apify, Instagram, and Hacker News are all called
+# via stdlib urllib to stay dependency-free and avoid version drift.
+# Playwright is the one real dependency: it renders each slide's HTML/CSS
+# template to an image with a real headless browser (see lib/render_client.py).
+playwright==1.63.0

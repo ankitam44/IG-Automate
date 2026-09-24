@@ -19,9 +19,11 @@ research_agent   (weekly)   -> reads config/niche.json + data/competitor_seed.js
 
 content_agent    (2x/week)  -> reads strategy.json, asks Groq for post concepts
                                 (respecting whatever research_agent paused, and
-                                riffing on trending topics where they fit), renders
-                                images (pollinations.ai, free), appends ready posts
-                                to data/queue.json
+                                riffing on trending topics where they fit) as
+                                structured slide content (headline/bullets/bar
+                                values, not image prompts), renders each slide as
+                                an HTML/CSS card via a headless browser (free, no
+                                key), appends ready posts to data/queue.json
 
 publisher_agent  (hourly)   -> checks data/queue.json for posts whose scheduled_for
                                 time has passed, publishes via Instagram Graph API,
@@ -57,6 +59,17 @@ real decisions from data, in code, not just in a prompt:
   Hacker News stories mentioning AI/GPT/LLM/etc (free, keyless, via
   Algolia's public HN search API) so `content_agent` can riff on what's
   actually being talked about right now, not just the static pillar list.
+- **Template-rendered slides, not diffusion-generated images.** This
+  account's actual inspiration posts are bold typography/card graphic
+  design (headlines, bullet lists, comparison bars), not photos. Asking an
+  image diffusion model (the earlier pollinations.ai approach) for that
+  reliably produced garbled, illegible text and generic stock-photo
+  compositions -- the wrong tool for the job. `lib/render_client.py`
+  instead has the LLM return structured slide content (headline, bullets,
+  bar values) against one of four HTML/CSS templates
+  (`hook`/`spotlight`/`list`/`bars`), rendered to a real image with a
+  headless browser (Playwright + Chromium, free, no API key). Crisp,
+  on-brand, and actually legible.
 - **Live competitor scraping (optional).** `lib/apify_client.py` pulls each
   seed creator's recent posts (caption, likes, comments) via Apify's
   Instagram scraper when `APIFY_API_TOKEN` is set, feeding real numbers
@@ -117,8 +130,8 @@ real decisions from data, in code, not just in a prompt:
 ### 4. Make the repo public
 The publisher needs publicly reachable image URLs (raw.githubusercontent.com).
 Graph API cannot accept direct file uploads. Set this repo to public in
-Settings, or swap `lib/image_client.py`/`publisher_agent.py` for a paid image
-host later if you'd rather stay private.
+Settings, or swap `publisher_agent.py` for a paid image host later if you'd
+rather stay private.
 
 ### 5. Add repo secrets
 Settings > Secrets and variables > Actions > New repository secret:
@@ -163,16 +176,20 @@ in Actions rather than locally.)
   Apify's free monthly credit, not unlimited -- fine for the pipeline's
   weekly cadence, not for constant manual re-runs. Also carries some ToS
   risk inherent to scraping (see "What's actually agentic here" above).
-- **Images only, no reels.** Free video generation isn't good enough yet;
-  reels stay a manual/future addition.
-- **Image quality is best-effort.** pollinations.ai is a free public
-  service, not a paid SLA. Swap `lib/image_client.py` for Ideogram/Stability
-  if/when there's budget.
+- **Images only, no reels.** No free video generation in the loop; reels
+  stay a manual/future addition.
+- **Template slides, not custom illustration.** `lib/render_client.py`'s
+  four templates cover bold typography/card layouts well but can't do
+  custom illustration, photos, or mascot-style graphics -- if a post
+  concept genuinely needs a photo or drawn illustration, this pipeline
+  can't produce one for free. Add a paid image API for those cases if it
+  comes up.
 - **Instagram token expiry.** Long-lived tokens expire after 60 days;
   refresh manually until token-refresh automation is added.
-- **Rate limits.** Groq and pollinations.ai free tiers can throttle under
-  heavy use; this pipeline's default cadence (2-3 posts/week) stays well
-  within limits. (An earlier version of this pipeline used Gemini, whose
-  free tier turned out to be a tighter 5 req/min / 20 req/day per model
-  with frequent "model overloaded" errors -- switched to Groq for more
-  headroom and reliability.)
+- **Rate limits.** Groq's free tier can throttle under heavy use; this
+  pipeline's default cadence (2-3 posts/week) stays well within limits.
+  (Two earlier providers didn't work out: Gemini's free tier was a tight
+  5 req/min / 20 req/day per model with frequent "model overloaded"
+  errors, and pollinations.ai -- an image diffusion model -- was the
+  wrong tool for this account's typography-driven post style. Switched to
+  Groq for text and to rendered HTML/CSS templates for slides.)
