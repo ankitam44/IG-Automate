@@ -151,7 +151,7 @@ def main():
     with render_client.Renderer() as renderer:
         for concept, scheduled_for in zip(concepts, slots):
             post_id = uuid.uuid4().hex[:10]
-            palette = render_client.palette_for(post_id)
+            look = render_client.look_for(post_id)
             slide_specs = concept.get("slides") or []
             total = len(slide_specs)
 
@@ -160,7 +160,7 @@ def main():
                 slide = _build_slide(concept, slide_spec, i + 1, total)
                 rel_path = f"data/generated/images/{post_id}_{i}.png"
                 abs_path = Path(__file__).resolve().parent.parent / rel_path
-                renderer.render(slide, palette, str(abs_path))
+                renderer.render(slide, look, str(abs_path))
                 image_paths.append(rel_path)
 
             queue["posts"].append({
