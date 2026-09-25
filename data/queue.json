@@ -1,3 +1,55 @@
 {
-  "posts": []
+  "posts": [
+    {
+      "id": "aadaefe4b8",
+      "status": "ready",
+      "format": "carousel",
+      "pillar": "AI tool of the day",
+      "caption": "\ud83d\ude80 Your coffee logo just got AI\u2011powered in 30 seconds! Easy design wins with Claude Opus 5.5. Comment \u2018COFFEE\u2019 for a free prompt sheet! \u2615\ud83e\udd16\n\n#AI #TechTips #Claude #AIDesign #NoCode #QuickWins #FunTech #AIForAll #PromptHack #InstaAI",
+      "image_paths": [
+        "data/generated/images/aadaefe4b8_0.png",
+        "data/generated/images/aadaefe4b8_1.png",
+        "data/generated/images/aadaefe4b8_2.png",
+        "data/generated/images/aadaefe4b8_3.png"
+      ],
+      "scheduled_for": "2026-09-25T18:00:00-04:00",
+      "created_at": "2026-09-24T19:51:35.290160Z"
+    },
+    {
+      "id": "b5271171ef",
+      "status": "ready",
+      "format": "single_image_quote",
+      "pillar": "AI tool of the day",
+      "caption": "\u2615\ud83e\udd16 Claude just designed my coffee logo in 30 seconds! Get the same fast win \u2013 comment \u2018COFFEE\u2019 for a free prompt sheet.\n\n#AI #AIFun #TechTips #EasyAI #AItools #PromptHack #NoJargon #CreativeAI #AIquickwins #DailyAI",
+      "image_paths": [
+        "data/generated/images/b5271171ef_0.png"
+      ],
+      "scheduled_for": "2026-09-28T18:00:00-04:00",
+      "created_at": "2026-09-25T08:59:41.792707Z"
+    },
+    {
+      "id": "297d81e3d1",
+      "status": "ready",
+      "format": "single_image_quote",
+      "pillar": "Myth-busting AI misconceptions",
+      "caption": "\ud83d\ude80 AI isn\u2019t stealing your gig, it\u2019s handing you shortcuts! Drop a \ud83d\ude4c if you\u2019re ready for the boost. Comment \u2018BOOST\u2019 for a tip sheet.\n\n#AI #MythBusting #TechTips #AIBoost #NoJargon #AIEasy #AIforAll #AIFriendly #AIHacks #DailyAI",
+      "image_paths": [
+        "data/generated/images/297d81e3d1_0.png"
+      ],
+      "scheduled_for": "2026-09-30T18:00:00-04:00",
+      "created_at": "2026-09-25T08:59:42.440494Z"
+    },
+    {
+      "id": "cc7696f551",
+      "status": "ready",
+      "format": "carousel",
+      "pillar": "3\u2011step tutorials",
+      "caption": "\ud83d\uded2\u2728 Turn GPT\u20116 into your grocery guru in 3 easy steps. Swipe \ud83d\udc49 and try it today \u2013 comment \u2018LIST\u2019 for the prompt!\n\n#AI #GroceryHack #GPT6 #AItools #EasyAI #PromptTips #NoJargon #TechTips #AIFun #DailyAI",
+      "image_paths": [
+        "data/generated/images/cc7696f551_0.png"
+      ],
+      "scheduled_for": "2026-10-02T18:00:00-04:00",
+      "created_at": "2026-09-25T08:59:43.109508Z"
+    }
+  ]
 }

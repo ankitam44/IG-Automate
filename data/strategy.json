@@ -1,7 +1,38 @@
 {
-  "generated_at": null,
-  "summary": "",
-  "recommended_pillars": [],
-  "recommended_formats": [],
-  "notes": ""
+  "summary": "High\u2011engagement posts from similar creators use bold, relatable claims and clear CTAs (e.g., \u201ccomment X for a free guide\u201d). Single\u2011image quotes with punchy hooks and a playful tone drive likes and comments, while carousel tutorials add value and keep viewers swiping.",
+  "recommended_pillars": [
+    "AI tool of the day",
+    "Myth\u2011busting AI misconceptions",
+    "Before/after: manual vs AI",
+    "3\u2011step tutorials (carousel)"
+  ],
+  "recommended_formats": [
+    "single_image_quote",
+    "carousel"
+  ],
+  "notes": "Hook ideas: \u2022 \u201cClaude just learned to design my coffee logo \u2013 and it only took 30 seconds \u2615\ud83e\udd16\u201d (ties to Claude Opus 5.5). \u2022 \u201cThink GPT\u20116 can\u2019t help with your grocery list? Think again \u2013 3 steps to a AI\u2011powered list \ud83d\uded2\u2728\u201d. Use a CTA like \u201ccomment \u2018COFFEE\u2019 for a free prompt sheet\u201d. Visual style: bright background, bold sans\u2011serif text overlay, a small doodle or emoji that illustrates the claim, and a tiny brand logo in the corner. Keep captions under 150 characters, start with a playful statement, follow with a simple benefit, then the CTA. Leverage trending headlines by framing them as everyday wins (\u201cYour phone can now run AI\u2011powered shortcuts thanks to Snapdragon X2 \u2013 here\u2019s how to set one up in 3 taps\u201d). Post 3\u20114 times a week: 2 single\u2011image quotes with strong hooks and CTAs, 1 carousel tutorial, 1 quick before/after carousel. Engage early: reply to first 20 comments with emojis to boost algorithmic reach.",
+  "paused_pillars": [],
+  "paused_formats": [],
+  "performance_snapshot": {
+    "by_pillar": {},
+    "by_format": {},
+    "overall_avg_engagement": null,
+    "sample_size": 0,
+    "underperforming_pillars": [],
+    "underperforming_formats": [],
+    "top_pillars": [],
+    "engagement_trend": null
+  },
+  "trending_topics_used": [
+    "Claude Opus 5.5",
+    "GPT-6 Sol and Luna",
+    "Claude discovers a novel enzyme system with CRISPR-like repeats",
+    "OpenAI GPT\u20136 Astra breaks Enigma message that has resisted solution since 2005",
+    "Linux support is coming to Snapdragon X2 Series",
+    "Meta takes down a critical video about meta AI Glasses after filming at Meta",
+    "Microsoft killed FoxPro in 2007. Anyway, here's FoxPro revived",
+    "Can gzip be a language model?"
+  ],
+  "decision_log": [],
+  "generated_at": "2026-09-24T16:38:50.463619Z"
 }

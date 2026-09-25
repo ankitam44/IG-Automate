@@ -1,5 +1,5 @@
 {
-  "_instructions": "Free tier has no automated Instagram scraper. Manually add reference posts you like from the seed creators here (screenshot the post, describe format/hook/caption). The research agent uses this as ground truth until enough of your own post history exists to learn from directly. Add 3-5 entries per creator when you have time; the system works with zero entries too, just less informed at first.",
+  "_instructions": "When APIFY_API_TOKEN is set (see README), research_agent also live-scrapes each seed creator's recent posts automatically -- this file is now a supplement, not the only source. It's still worth filling in by hand because a live scrape only gives raw stats (likes/comments), not WHY a post worked; that reasoning has to come from you or the model's own inference. Manually add reference posts you like from the seed creators here (screenshot the post, describe format/hook/caption/why it worked). Add 3-5 entries per creator when you have time; the system works with zero entries too, especially with the live scrape filling in.",
   "reference_posts": [
     {
       "creator": "nextbysophie",

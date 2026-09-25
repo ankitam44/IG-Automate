@@ -21,9 +21,10 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install -r requirements.txt
+      - run: playwright install --with-deps chromium
       - run: python agents/content_agent.py
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           POSTS_TO_GENERATE: ${{ github.event.inputs.count || '2' }}
       - name: Commit new queued posts + images
         run: |
