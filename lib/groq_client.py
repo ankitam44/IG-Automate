@@ -74,14 +74,17 @@ def _call_once(prompt: str, json_mode: bool) -> str:
 def generate(prompt: str, json_mode: bool = False) -> str:
     """Send a single-turn prompt to Groq and return the text response.
     If json_mode is True, asks the model to respond with raw JSON only.
-    Retries a transient error (rate limited, momentarily overloaded) with
-    backoff; anything else (bad request, bad key) fails immediately."""
+    Retries a transient error (rate limited, momentarily overloaded, or the
+    model briefly failing to produce schema-valid JSON on a complex
+    request) with backoff; anything else (bad request, bad key) fails
+    immediately."""
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             return _call_once(prompt, json_mode)
         except urllib.error.HTTPError as e:
             body = e.read().decode("utf-8", errors="replace")
-            if e.code not in TRANSIENT_STATUS_CODES or attempt == MAX_RETRIES:
+            retryable = e.code in TRANSIENT_STATUS_CODES or "json_validate_failed" in body
+            if not retryable or attempt == MAX_RETRIES:
                 raise RuntimeError(f"Groq API error {e.code}: {body}") from e
             wait = BACKOFF_SECONDS * attempt
             print(f"Groq returned {e.code} (attempt {attempt}/{MAX_RETRIES}), retrying in {wait}s...")

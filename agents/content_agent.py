@@ -108,14 +108,19 @@ paraphrased "highlight" won't match and will be silently ignored.
   {{"label": "<=20 chars", "value": 0-100}}, 2-3 items), caption (optional,
   <=90 chars). Good for before/after or X vs Y.
 
-Return ONLY valid JSON: a list of {n} objects, each with this exact shape:
+Return ONLY valid JSON: a single JSON object with one key, "posts", whose
+value is a list of exactly {n} post objects, each with this exact shape:
 {{
-  "format": "carousel" or "single_image_quote",
-  "pillar": "which content pillar this uses",
-  "caption": "the full Instagram caption, engaging, includes a hook in the first line",
-  "hashtags": ["#tag1", "#tag2", ... 8-12 relevant hashtags],
-  "slides": [
-    {{"template": "hook", "eyebrow": "optional short all-caps label", ...template fields...}}
+  "posts": [
+    {{
+      "format": "carousel" or "single_image_quote",
+      "pillar": "which content pillar this uses",
+      "caption": "the full Instagram caption, engaging, includes a hook in the first line",
+      "hashtags": ["#tag1", "#tag2", ... 8-12 relevant hashtags],
+      "slides": [
+        {{"template": "hook", "eyebrow": "optional short all-caps label", ...template fields...}}
+      ]
+    }}
   ]
 }}
 
