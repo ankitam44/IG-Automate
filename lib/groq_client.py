@@ -80,8 +80,9 @@ def generate(prompt: str, json_mode: bool = False) -> str:
         try:
             return _call_once(prompt, json_mode)
         except urllib.error.HTTPError as e:
+            body = e.read().decode("utf-8", errors="replace")
             if e.code not in TRANSIENT_STATUS_CODES or attempt == MAX_RETRIES:
-                raise
+                raise RuntimeError(f"Groq API error {e.code}: {body}") from e
             wait = BACKOFF_SECONDS * attempt
             print(f"Groq returned {e.code} (attempt {attempt}/{MAX_RETRIES}), retrying in {wait}s...")
             time.sleep(wait)
